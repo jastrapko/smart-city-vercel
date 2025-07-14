@@ -1,0 +1,116 @@
+<!-- templates/index.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smart City Simulator</title>
+    <style>
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; line-height: 1.6; margin: 0; padding: 20px; background-color: #f4f7f9; color: #333; }
+        .container { max-width: 900px; margin: auto; background: #fff; padding: 20px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        h1, h2, h3 { color: #0b2e59; }
+        .status-bar { display: flex; justify-content: space-between; padding: 15px; background: #eef2f5; border-radius: 5px; margin-bottom: 20px; }
+        .status-bar span { font-size: 1.2em; font-weight: bold; }
+        .status-bar .budget { color: #2a9d8f; }
+        .columns { display: flex; gap: 30px; }
+        .col { flex: 1; }
+        .feature-list, .selection-list { list-style: none; padding: 0; }
+        .feature-list li, .selection-list li { display: flex; justify-content: space-between; align-items: center; padding: 10px; border-bottom: 1px solid #eee; }
+        .feature-list button, .selection-list button { background-color: #2a9d8f; color: white; border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer; }
+        .selection-list button { background-color: #e76f51; }
+        .btn-main { display: block; width: 100%; padding: 15px; font-size: 1.2em; font-weight: bold; color: white; background: #0b2e59; border: none; border-radius: 5px; cursor: pointer; margin-top: 20px; }
+        .btn-reset { text-align: center; margin-top: 15px; }
+        .btn-reset a { color: #e76f51; text-decoration: none; }
+        .report { background: #fdfaf4; border: 1px solid #e7c697; padding: 20px; border-radius: 5px; margin-top: 20px; }
+        .report ul { padding-left: 20px; }
+        .report .strength { color: #2a9d8f; }
+        .report .weakness { color: #e76f51; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Smart City Simulator</h1>
+
+        {% if not report %}
+            <div class="status-bar">
+                <span>Remaining Budget:</span>
+                <span class="budget">{{ budget }} units</span>
+            </div>
+            <div class="columns">
+                <div class="col">
+                    <h2>Available Features</h2>
+                    <ul class="feature-list">
+                        {% for feature in available_features %}
+                            <li>
+                                <span>{{ feature.name }} ({{ feature.cost }} units)</span>
+                                <form method="post" style="display: inline;">
+                                    <input type="hidden" name="action" value="add">
+                                    <input type="hidden" name="feature_id" value="{{ feature.id }}">
+                                    <button type="submit">Add</button>
+                                </form>
+                            </li>
+                        {% endfor %}
+                    </ul>
+                </div>
+                <div class="col">
+                    <h2>Your City Plan</h2>
+                    {% if selections %}
+                        <ul class="selection-list">
+                            {% for feature in selections %}
+                                <li>
+                                    <span>{{ feature.name }} ({{ feature.cost }} units)</span>
+                                    <form method="post" style="display: inline;">
+                                        <input type="hidden" name="action" value="remove">
+                                        <input type="hidden" name="feature_id" value="{{ feature.id }}">
+                                        <button type="submit">Remove</button>
+                                    </form>
+                                </li>
+                            {% endfor %}
+                        </ul>
+                    {% else %}
+                        <p>Your plan is empty. Add features from the left.</p>
+                    {% endif %}
+                </div>
+            </div>
+            <form method="post">
+                <input type="hidden" name="action" value="finalize">
+                <button class="btn-main" type="submit">Finalize & Score Plan</button>
+            </form>
+        {% else %}
+            <div class="report">
+                <h2>City Assessment Report</h2>
+                <h3>Final Score: {{ report.score }}</h3>
+                <p><strong>Long-Term Viability:</strong> {{ report.viability }}</p>
+                
+                <h3>Strengths</h3>
+                <ul>
+                {% for s in report.strengths %}
+                    <li class="strength">{{ s }}</li>
+                {% else %}
+                    <li>No significant strengths identified.</li>
+                {% endfor %}
+                </ul>
+
+                <h3>Weaknesses</h3>
+                <ul>
+                {% for w in report.weaknesses %}
+                    <li class="weakness">{{ w }}</li>
+                {% else %}
+                    <li>No significant weaknesses identified. Well done!</li>
+                {% endfor %}
+                </ul>
+
+                <h3>Recommendations</h3>
+                <ul>
+                {% for r in report.recommendations %}
+                    <li>{{ r }}</li>
+                {% endfor %}
+                </ul>
+            </div>
+            <div class="btn-reset">
+                <a href="{{ url_for('reset') }}">Start a New City Plan</a>
+            </div>
+        {% endif %}
+    </div>
+</body>
+</html>
