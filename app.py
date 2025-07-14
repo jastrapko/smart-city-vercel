@@ -26,7 +26,7 @@ FEATURES = [
 ]
 FEATURE_MAP = {f['id']: f for f in FEATURES}
 CATEGORIES = sorted(list(set(f['category'] for f in FEATURES)))
-INITIAL_BUDGET = 1000
+INITIAL_BUDGET = 1500
 
 app = Flask(__name__)
 # This secret key is needed to manage the user's game session
