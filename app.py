@@ -38,7 +38,7 @@ FEATURES = [
 FEATURE_MAP = {f['id']: f for f in FEATURES}
 CATEGORIES = sorted(list(set(f['category'] for f in FEATURES)))
 # REVISED >> Budget is now 1100
-INITIAL_BUDGET = 1100
+INITIAL_BUDGET = 1500
 
 app = Flask(__name__)
 app.secret_key = 'super-secret-key-for-smart-city'
@@ -128,8 +128,19 @@ def game():
         
         return redirect(url_for('game'))
 
-    available_features = sorted([f for f in FEATURES if f['id'] not in session['selections']], key=lambda x: x['id'])
+     available_features = sorted([f for f in FEATURES if f['id'] not in session['selections']], key=lambda x: x['id'])
     selected_features = sorted(session['selections'].values(), key=lambda x: x['id'])
+
+    # NEW >> This loop adds the prerequisite names for display in the template
+    for feature in available_features:
+        if feature['prereqs']:
+            # For each prereq ID, find its name in FEATURE_MAP and create a formatted string
+            details = [f"{FEATURE_MAP[pid]['name']} ({pid})" for pid in feature['prereqs']]
+            # Add a new key to the dictionary with the formatted string
+            feature['prereq_details'] = ", ".join(details)
+        else:
+            feature['prereq_details'] = None
+    # << END NEW
     
     return render_template('index.html', 
                            budget=session['budget'],
