@@ -100,6 +100,10 @@ def calculate_score(selections):
     }
 
 @app.route('/', methods=['GET', 'POST'])
+# This is the entire, corrected game() function.
+# The only other function you need is @app.route('/reset')
+
+@app.route('/', methods=['GET', 'POST'])
 def game():
     if 'selections' not in session:
         session['selections'] = {}
@@ -128,19 +132,23 @@ def game():
         
         return redirect(url_for('game'))
 
-     available_features = sorted([f for f in FEATURES if f['id'] not in session['selections']], key=lambda x: x['id'])
+    available_features = sorted([f for f in FEATURES if f['id'] not in session['selections']], key=lambda x: x['id'])
     selected_features = sorted(session['selections'].values(), key=lambda x: x['id'])
 
-    # NEW >> This loop adds the prerequisite names for display in the template
+    # REVISED and SAFER >> This loop now uses .get() to prevent crashes
     for feature in available_features:
-        if feature['prereqs']:
-            # For each prereq ID, find its name in FEATURE_MAP and create a formatted string
-            details = [f"{FEATURE_MAP[pid]['name']} ({pid})" for pid in feature['prereqs']]
-            # Add a new key to the dictionary with the formatted string
+        if feature.get('prereqs'):
+            details = []
+            for pid in feature['prereqs']:
+                # Use .get() for the dictionary and for the 'name' key for maximum safety
+                prereq_feature = FEATURE_MAP.get(pid, {}) 
+                prereq_name = prereq_feature.get('name', 'Unknown Feature')
+                details.append(f"{prereq_name} ({pid})")
+            
             feature['prereq_details'] = ", ".join(details)
         else:
             feature['prereq_details'] = None
-    # << END NEW
+    # << END REVISED
     
     return render_template('index.html', 
                            budget=session['budget'],
