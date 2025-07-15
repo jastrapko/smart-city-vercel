@@ -1,4 +1,4 @@
-<!-- templates/index.html -->
+<!-- templates/index.html (Revised Version) -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -12,12 +12,15 @@
         .status-bar { display: flex; justify-content: space-between; padding: 15px; background: #eef2f5; border-radius: 5px; margin-bottom: 20px; }
         .status-bar span { font-size: 1.2em; font-weight: bold; }
         .status-bar .budget { color: #2a9d8f; }
-        .columns { display: flex; gap: 30px; }
+        .columns { display: grid; grid-template-columns: 1fr 1fr; gap: 30px; }
         .col { flex: 1; }
         .feature-list, .selection-list { list-style: none; padding: 0; }
-        .feature-list li, .selection-list li { display: flex; justify-content: space-between; align-items: center; padding: 10px; border-bottom: 1px solid #eee; }
-        .feature-list button, .selection-list button { background-color: #2a9d8f; color: white; border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer; }
+        .feature-list li, .selection-list li { display: flex; flex-direction: column; padding: 12px; border-bottom: 1px solid #eee; }
+        .feature-main { display: flex; justify-content: space-between; align-items: center; width: 100%; }
+        .feature-list button, .selection-list button { background-color: #2a9d8f; color: white; border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer; flex-shrink: 0; margin-left: 10px; }
         .selection-list button { background-color: #e76f51; }
+        /* REVISED >> Style for the new prerequisite text */
+        .prereq { font-size: 0.8em; color: #777; font-style: italic; margin-top: 4px; }
         .btn-main { display: block; width: 100%; padding: 15px; font-size: 1.2em; font-weight: bold; color: white; background: #0b2e59; border: none; border-radius: 5px; cursor: pointer; margin-top: 20px; }
         .btn-reset { text-align: center; margin-top: 15px; }
         .btn-reset a { color: #e76f51; text-decoration: none; }
@@ -40,15 +43,26 @@
                 <div class="col">
                     <h2>Available Features</h2>
                     <ul class="feature-list">
-                        {% for feature in available_features %}
-                            <li>
-                                <span>{{ feature.name }} ({{ feature.cost }} units)</span>
-                                <form method="post" style="display: inline;">
-                                    <input type="hidden" name="action" value="add">
-                                    <input type="hidden" name="feature_id" value="{{ feature.id }}">
-                                    <button type="submit">Add</button>
-                                </form>
-                            </li>
+                        {% for category in categories %}
+                            <h3>{{ category }}</h3>
+                            {% for feature in available_features %}
+                                {% if feature.category == category %}
+                                <li>
+                                    <div class="feature-main">
+                                        <span>{{ feature.name }} ({{ feature.cost }} units)</span>
+                                        <form method="post" style="display: inline;">
+                                            <input type="hidden" name="action" value="add">
+                                            <input type="hidden" name="feature_id" value="{{ feature.id }}">
+                                            <button type="submit">Add</button>
+                                        </form>
+                                    </div>
+                                    <!-- REVISED >> Tooltip-style prerequisite display -->
+                                    {% if feature.prereqs %}
+                                        <div class="prereq">Requires: {{ feature.prereqs|join(', ') }}</div>
+                                    {% endif %}
+                                </li>
+                                {% endif %}
+                            {% endfor %}
                         {% endfor %}
                     </ul>
                 </div>
@@ -58,12 +72,14 @@
                         <ul class="selection-list">
                             {% for feature in selections %}
                                 <li>
+                                  <div class="feature-main">
                                     <span>{{ feature.name }} ({{ feature.cost }} units)</span>
                                     <form method="post" style="display: inline;">
                                         <input type="hidden" name="action" value="remove">
                                         <input type="hidden" name="feature_id" value="{{ feature.id }}">
                                         <button type="submit">Remove</button>
                                     </form>
+                                  </div>
                                 </li>
                             {% endfor %}
                         </ul>
